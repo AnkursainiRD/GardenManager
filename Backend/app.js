@@ -6,7 +6,7 @@ import authRoute from "./routes/userRoutes.js";
 const app=express()
 
 app.use(cors({
-    origin:"*",
+    origin:"http://localhost:4000",
     methods:["POST","DELETE","GET","PUT"],
     credentials:true
 }))
