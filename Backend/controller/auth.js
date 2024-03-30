@@ -1,5 +1,6 @@
 import { User } from "../models/UserModel.js";
 import { Task } from "../models/TaskModel.js"
+import {Attendance} from "../models/AttendanceModel.js"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
 
@@ -53,7 +54,12 @@ const login=async(req,res)=>{
                 message:"User does not exists!"
             })
         }
-        console.log(user);
+        if(!user.status){
+            return res.status(401).json({
+                success:false,
+                message:"You are deactivated by Admin!"
+            })
+        }
         if(await bcrypt.compare(password,user.password))
         {
             const payload={
@@ -90,4 +96,75 @@ const login=async(req,res)=>{
 }
 
 
-export {login,signUp}
+const setAttendance=async(req,res)=>{
+    try {
+        const {userId}=req.body
+        const attendance=await Attendance.create({user:userId})
+        await User.findByIdAndUpdate({_id:userId},{$push:{attendance:attendance}})
+        return res.status(200).json({
+            success:true,
+            message:"Attendance Marked Successfuly"
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// admin controler
+
+const getAllStaff=async(req,res)=>{
+    try {
+        const allStaff=await User.find({accountType:"staff"}).populate("task").exec()
+        if(!allStaff){
+            return res.status(404).json({
+                success:false,
+                message:"No staff found!"
+            })
+        }
+        return res.status(200).json({
+            success:true,
+            message:"Data Fecthed",
+            data:allStaff
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const getAllAttendance=async(req,res)=>{
+    try {
+        const allAttendance=await Attendance.find({})
+        if(!allAttendance){
+            return res.status(404).json({
+                success:false,
+                message:"No attendance preset right now!"
+            })
+        }
+        return res.status(200).json({
+            success:true,
+            message:"Attendance Fetched!",
+            data:allAttendance
+        })
+    } catch (error) {
+     console.log(error);   
+    }
+}
+
+
+const changeStatus=async(req,res)=>{
+    try {
+        const {userId,statusValue}=req.body
+        console.log(statusValue);
+        const user=await User.findById({_id:userId})
+        user.status=statusValue;
+        user.save()
+        return res.status(200).json({
+            success:true,
+            data:user
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export {login,signUp,getAllStaff,setAttendance,getAllAttendance,changeStatus}
