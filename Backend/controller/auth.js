@@ -40,6 +40,7 @@ const signUp=async(req,res)=>{
 //Login Controller
 const login=async(req,res)=>{
     try {
+     
         const {email,password}=req.body
         if(!email || !password){
             return res.status(400).json({
@@ -55,7 +56,8 @@ const login=async(req,res)=>{
             })
         }
         if(!user.status){
-            return res.status(401).json({
+            console.log("working here");
+            return res.status(400).json({
                 success:false,
                 message:"You are deactivated by Admin!"
             })
@@ -92,15 +94,19 @@ const login=async(req,res)=>{
         }
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            success:false,
+            message:"Server Error!"
+        })
     }
 }
 
 
 const setAttendance=async(req,res)=>{
     try {
-        const {userId}=req.body
-        const attendance=await Attendance.create({user:userId})
-        await User.findByIdAndUpdate({_id:userId},{$push:{attendance:attendance}})
+        const {userId,arrivedTime}=req.body
+        const attendance=await Attendance.create({user:userId,arrivedTime:arrivedTime})
+        await User.findByIdAndUpdate({_id:userId},{attendance:attendance})
         return res.status(200).json({
             success:true,
             message:"Attendance Marked Successfuly"
@@ -133,7 +139,7 @@ const getAllStaff=async(req,res)=>{
 
 const getAllAttendance=async(req,res)=>{
     try {
-        const allAttendance=await Attendance.find({})
+        const allAttendance=await Attendance.find({}).populate("user").exec()
         if(!allAttendance){
             return res.status(404).json({
                 success:false,
@@ -154,7 +160,6 @@ const getAllAttendance=async(req,res)=>{
 const changeStatus=async(req,res)=>{
     try {
         const {userId,statusValue}=req.body
-        console.log(statusValue);
         const user=await User.findById({_id:userId})
         user.status=statusValue;
         user.save()

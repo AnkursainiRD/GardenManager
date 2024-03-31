@@ -1,22 +1,31 @@
 import React, { useState } from 'react'
-import {useForm} from "react-hook-form"
-import { login } from '../service/operations/authApi';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form'
+import { signUp } from '../service/operations/authApi'
+import { useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 
-function LoginPage() {
+function SignUpPage() {
     const {register,handleSubmit,formState:{errors}}=useForm()
-    const dispatch=useDispatch()
+    const {token}=useSelector(state=>state.auth)
     const navigate=useNavigate()
+    const dispatch=useDispatch()
     const [showPassword,setShowPassword]=useState(false)
-
+    
     function getData(data){
-        login(data,dispatch,navigate)
+
+        data.accountType="staff"
+        console.log("working here");
+        dispatch(signUp(data,token,navigate))
     }
   return (
-    <div className='w-full h-[80vh] flex justify-center items-center'>
-        <div className='w-[20%]'>
+    <div className='w-full h-[93vh] flex items-center justify-center'>
+         <div className='w-[20%] '>
             <form className='flex flex-col' onSubmit={handleSubmit(getData)}>
+
+                <label id='fullName' className='w-[40%]'>Full Name</label>
+                <input name='fullName' type="text" className='bg-gray-300' placeholder='xyz' {...register("fullName",{required:true})}/>
+                {errors.fullName && <p className='text-red-400'>Full Name is required</p>} 
+
                 <label id='email' className='w-[40%]'>Email</label>
                 <input name='email' type="email" className='bg-gray-300' placeholder='xyz@gmail' {...register("email",{required:true})}/>
                 {errors.email && <p className='text-red-400'>Email is required</p>} 
@@ -26,11 +35,11 @@ function LoginPage() {
                 <p onClick={()=>setShowPassword(!showPassword)}>{showPassword?("Hide"):("Show")}</p>
                 {errors.password && <p>Password is required</p>}
 
-                <button type='submit' className='w-full bg-green-300 mt-5 font-semibold'>Login</button>
+                <button type='submit' className='w-full bg-green-300 mt-5 font-semibold'>SignUp</button>
             </form>
         </div>
     </div>
   )
 }
 
-export default LoginPage
+export default SignUpPage

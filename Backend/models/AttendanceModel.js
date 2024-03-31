@@ -4,6 +4,10 @@ const attendanceSchema=new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
     },
+    arrivedTime:{
+        type: Date,
+        required:true
+    },
     currentDate:{
         type:Date,
         default:Date.now()
